@@ -1,0 +1,53 @@
+open emacs now M-x
+since i have swiper use M-x isearch forward
+C-s goes to next comma
+emacs macros
+defining macros
+C-x( hello worls C-x ) C-x e repets last macro
+or starting with f3
+f3 finishes macro;
+C-c C-c python execute
+undo tree
+X-u
+shows uno "tree " and you can just navigate
+expand region
+each time C-= makes color around first word then parentacies
+after that use iedit and press C-; and i can change all of one time
+use narrow to region and widen
+mark then
+C-x -n to narrow
+C-x -n
+but not installed
+(load-file "some-file.el") would load an extrea file
+use M-x to change the yank you would want to
+now M-x now gives a list of the old kills
+typen find file/ssh and so on to log in on cip
+eshell can use emacs commands
+better shell
+"C-'" opens shell
+"C-;" opens remote shell
+recatngle mode
+dealing with rectangle
+esc -x stirng rectangle
+i can insert a string in every line
+use full to do something on bunch of line
+also doing esc x kil recantgle
+exc x yank rectangle
+but for tabular data
+go into org mode dealing with tabes
+C++
+io tab gets c++
+main tab
+need to add smart parent
+C- k kills onley parentese cotence
+
+normally until end of line and complete function
+M-x dann compile and then my command
+after error M-x ' brings me to the error
+g++ -MM main.cpp to see what is based on
+tray ag and function to find it in which files
+M-x councel-ag
+brings all fact refernces
+C-cC-o bring it up in buffer
+great to navigate through files
+
