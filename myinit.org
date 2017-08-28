@@ -1,216 +1,135 @@
-#+STARTIP: overview
-* interface parenthesis
- #+BEGIN_SRC emacs-lisp
-;; global pareteses mode highlight
-(show-paren-mode 1)
-
-(require 'smartparens-config)
-;; Always start smartparens mode in js-mode.
-;;(add-hook 'js-mode-hook #'smartparens-mode)
- #+END_SRC
-* linemode
- #+BEGIN_SRC emacs-lisp
-
-(add-hook 'prog-mode-hook 'linum-mode)
-
- #+END_SRC
-* Python
- #+BEGIN_SRC emacs-lisp
-
-(require 'ob-ipython)
-(use-package jedi
-  :ensure t
-  :init
-  (add-hook 'python-mode-hook 'jedi:setup)
-  (add-hook 'python-mode-hook 'jedi:ac-setup))
-(use-package elpy
-  :ensure 
-  :config
-  (elpy-enable))
-; allows type to work on virtual enviroment
-(use-package virtualenvwrapper
+* hide startup screen
+#+BEGIN_SRC emacs-lisp
+(tool-bar-mode -1)
+(setq inhibit-startup-screen t)
+#+END_SRC
+* org-mode
+#+BEGIN_SRC emacs-lisp
+(use-package org-bullets
   :ensure t
   :config
-  (venv-initialize-interactive-shells)
-  (venv-initialize-eshell))
-(use-package yasnippet
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+#+END_SRC
+* python
+#+BEGIN_SRC emacs-lisp
+;;(exec-path-from-shell-copy-env "/home/david/anaconda2/bin/ipython" )
+;;(setq elpy-rpc-python-command "/home/david/anaconda2/bin/ipython")
+
+(elpy-enable)
+(elpy-use-ipython "/home/david/anaconda2/bin/ipython")
+(defvar myPackages
+  '(better-defaults
+    ein ;; add the ein package (Emacs ipython notebook)
+    elpy
+    flycheck
+    material-theme
+    py-autopep8))
+
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+(require 'py-autopep8)
+(add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+(setq ein:jupyter-default-server-command "/home/david/anaconda2/bin/jupyter")
+(setq ein:jupyter-server-args (list "--no-browser"))
+#+END_SRC
+
+#+RESULTS:
+
+* swiper and ivy
+#+BEGIN_SRC emacs-lisp
+
+   (use-package counsel
+:ensure t
+  :bind
+  (("M-y" . counsel-yank-pop)
+   :map ivy-minibuffer-map
+   ("M-y" . ivy-next-line)))
+
+
+
+
+  (use-package ivy
   :ensure t
-  :init 
-    (yas-global-mode 1))
- #+END_SRC
-* C++
- #+BEGIN_SRC emacs-lisp
-(require 'auto-complete)
+  :diminish (ivy-mode)
+  :bind (("C-x b" . ivy-switch-buffer))
+  :config
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-display-style 'fancy))
+
+  (use-package swiper
+  :ensure t
+  :bind (("C-s" . swiper)
+	 ("C-r" . swiper)
+	 ("C-c C-r" . ivy-resume)
+	 ("M-x" . counsel-M-x)
+	 ("C-x C-f" . counsel-find-file))
+  :config
+  (progn
+    (ivy-mode 1)
+    (setq ivy-use-virtual-buffers t)
+    (setq ivy-display-style 'fancy)
+    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+    ))
+(use-package avy
+:ensure t
+:bind ("M-s" . avy-goto-word-1)) ;; changed from char as per jcs
+#+END_SRC
+* c++
+#+BEGIN_SRC emacs-lisp
+(use-package ggtags
+:ensure t
+:config 
+(add-hook 'c-mode-common-hook
+          (lambda ()
+            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+              (ggtags-mode 1))))
+)
+#+END_SRC
+* auto-complete
+#+BEGIN_SRC emacs-lisp
 (require 'auto-complete-config)
 (ac-config-default)
-					; start auto complete
 (global-auto-complete-mode t)
-					;start jasnippet
-(add-to-list 'load-path
-              "~/.emacs.d/plugins/yasnippet")
-(require 'yasnippet)
-(yas-global-mode 1)
-;a function which initializes auto-complete-c-headers and get called for c/c++ hooks
-(defun my:acc-c-header-init ()
-  (require 'auto-complete-c-headers)
-  (add-to-list 'ac-sources 'ac-source-c-headers)
-  (add-to-list 'achead:include-directories '"  /usr/include/c++/6
- /usr/include/x86_64-linux-gnu/c++/6
- /usr/include/c++/6/backward
- /usr/lib/gcc/x86_64-linux-gnu/6/include
- /usr/local/include
- /usr/lib/gcc/x86_64-linux-gnu/6/include-fixed
- /usr/include/x86_64-linux-gnu
- /usr/include"
-     )
-  )
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(setq indo-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
-;; global pareteses mode highlight
-;; tags for code navigation c++
-(use-package ggtags
-  :ensure t
-  :config 
-  (add-hook 'c-mode-common-hook
-	    (lambda ()
-	      (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
-		(ggtags-mode 1))))
-  )
-(use-package auto-complete
-  :ensure t
-  :init
-  (progn
-    (ac-config-default)
-    (global-auto-complete-mode t)
-    ))
-					; flycheck
-(use-package flycheck
-  :ensure t
-  :init
-  (global-flycheck-mode t))
-  
- #+END_SRC
-* org-mode
- #+BEGIN_SRC emacs-lisp
+#+END_SRC
+* ido-mode
+#+BEGIN_SRC emacs-lisp
+(setq package-enable-at-startup nil)
+(require 'ido)
+(ido-mode t)
 
-(use-package org-bullets
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+#+END_SRC
 
- #+END_SRC
-* undoe_three
-* org-mode
- #+BEGIN_SRC emacs-lisp
-
-(use-package org-bullets
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
-
- #+END_SRC
-* undoe-tree
+* undo-tree
 #+BEGIN_SRC emacs-lisp
 (use-package undo-tree
   :ensure t
   :init
   (global-undo-tree-mode))
- #+END_SRC
-* better schell
- #+BEGIN_SRC emacs-lisp
-
-(use-package better-shell
+#+END_SRC
+* Yasnipet
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
   :ensure t
-  :bind (("C-'" . better-shell-shell)
-	 ("C-;" . better-shell-remote-open)))
+  :init
+    (yas-global-mode 1))
+#+END_SRC
+* smart parens
+#+BEGIN_SRC emacs-lisp
+(require 'smartparens-config)
+(add-hook 'prog-mode-hook 'smartparens-mode)
+#+END_SRC
+* Line in programming mode
+#+BEGIN_SRC emacs-lisp
+;;(add-hook 'prog-mode-hook 'linum-mode)
+#+END_SRC
+* Show paren mode
+#+BEGIN_SRC emacs-lisp
+   (show-paren-mode 1)
+#+END_SRC
+* Highlight current line
+#+BEGIN_SRC emacs-lisp
+ (global-hl-line-mode +1)
 
- #+END_SRC
-* swiper
- #+BEGIN_SRC emacs-lisp
-(use-package swiper
-  :ensure try
-  :config
-  (progn
-    (ivy-mode 1)
-    (setq ivy-use-virtual-buffers t)
-    (global-set-key "\C-s" 'swiper)
-    (global-set-key (kbd "C-c C-r") 'ivy-resume)
-    (global-set-key (kbd "<f6>") 'ivy-resume)
-    (global-set-key (kbd "M-x") 'counsel-M-x)
-    (global-set-key (kbd "C-x C-f") 'counsel-find-file)
-    (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-    (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-    (global-set-key (kbd "<f1> l") 'counsel-load-library)
-    (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-    (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-    (global-set-key (kbd "C-c g") 'counsel-git)
-    (global-set-key (kbd "C-c j") 'counsel-git-grep)
-    (global-set-key (kbd "C-c k") 'counsel-ag)
-    (global-set-key (kbd "C-x l") 'counsel-locate)
-    (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-    (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
-    ))
- #+END_SRC
-* general writing improvement
- #+BEGIN_SRC emacs-lisp
-
-(global-hl-line-mode t) ; flashes cursor
-
-
-(use-package beacon
-  :ensure t
-  :config
-  (beacon-mode 1))
-; deletes more white space
-(use-package hungry-delete
-  :ensure t
-  :config
-  (global-hungry-delete-mode))
-;; expand the marked region in semantic increments (negative prefix to reduce region)
-(use-package expand-region
-  :ensure t
-  :config 
-  (global-set-key (kbd "C-=") 'er/expand-region))
-(use-package iedit
-  :ensure t)
-(use-package counsel
-  :bind
-  (("M-y" . counsel-yank-pop)
-   :map ivy-minibuffer-map
-   ("M-y" . ivy-next-line)))
-(server-start)
-(require 'auto-complete)
-(require 'auto-complete-config)
-(ac-config-default)
-					; start auto complete
-(global-auto-complete-mode t)
-					;start jasnippet
-(add-to-list 'load-path
-              "~/.emacs.d/plugins/yasnippet")
-(require 'yasnippet)
-(yas-global-mode 1)
-;a function which initializes auto-complete-c-headers and get called for c/c++ hooks
-(defun my:acc-c-header-init ()
-  (require 'auto-complete-c-headers)
-  (add-to-list 'ac-sources 'ac-source-c-headers)
-  (add-to-list 'achead:include-directories '"  /usr/include/c++/6
- /usr/include/x86_64-linux-gnu/c++/6
- /usr/include/c++/6/backward
- /usr/lib/gcc/x86_64-linux-gnu/6/include
- /usr/local/include
- /usr/lib/gcc/x86_64-linux-gnu/6/include-fixed
- /usr/include/x86_64-linux-gnu
- /usr/include"
-     )
-  )
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-(setq indo-enable-flex-matching t)
-(setq ido-everywhere t)
-(ido-mode 1)
- #+END_SRC
+#+END_SRC
