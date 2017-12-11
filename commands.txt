@@ -51,3 +51,8 @@ brings all fact refernces
 C-cC-o bring it up in buffer
 great to navigate through files
 
+after getting error in emacs typc
+C-x and back arrow to get to error
+ag hello in file is like grep
+counel-ag
+use ggtags find tag and use M-. to quickly navigate

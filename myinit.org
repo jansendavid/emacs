@@ -78,20 +78,61 @@
 #+END_SRC
 * c++
 #+BEGIN_SRC emacs-lisp
-(use-package ggtags
-:ensure t
-:config 
+; ggtags
+(require 'ggtags)
 (add-hook 'c-mode-common-hook
           (lambda ()
-            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
               (ggtags-mode 1))))
-)
+
+(define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
+(define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
+(define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
+(define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
+(define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
+(define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
+
+(define-key ggtags-mode-map (kbd "M-,") 'pop-tag-mark)
 #+END_SRC
-* auto-complete
+
+#+RESULTS:
+| my:ac-c-headers-init |
+* auto complete
 #+BEGIN_SRC emacs-lisp
+(setq package-enable-at-startup nil)
+(require 'ido)
+(ido-mode t)
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+; start auto-complete with emacs
+;; auto-complete
+;; C++ auto completion mode
+(require 'auto-complete)
 (require 'auto-complete-config)
 (ac-config-default)
-(global-auto-complete-mode t)
+;a function which initializes auto-complete-c-headers and get called for c/c++ hooks
+(defun my:ac-c-header-init ()
+  (require 'auto-complete-c-headers)
+  (add-to-list 'ac-sources 'ac-source-c-headers)
+  (add-to-list 'achead:include-directories '"/usr/include/c++/6
+ /usr/include/x86_64-linux-gnu/c++/6 
+ /usr/include/c++/6/backward
+ /usr/lib/gcc/x86_64-linux-gnu/6/include
+ /usr/local/include
+ /usr/lib/gcc/x86_64-linux-gnu/6/include-fixed
+ /usr/include/x86_64-linux-gnu
+ /usr/include"
+     )
+  )
+(add-hook 'c++-mode-hook 'my:ac-c-header-init)
+(add-hook 'c-mode-hook 'my:ac-c-header-init)
+;; semantic mode
+(semantic-mode 1)
+(defun my:add-semantic-to-autocomplete()
+  (add-to-list 'ac-sources 'ac-source-semantic))
+(add-hook 'c-mode-common-hook 'my:add-semantic-to-autocomplete)
+(global-semantic-idle-scheduler-mode 1)
+
 #+END_SRC
 * ido-mode
 #+BEGIN_SRC emacs-lisp
@@ -132,4 +173,22 @@
 #+BEGIN_SRC emacs-lisp
  (global-hl-line-mode +1)
 
+#+END_SRC
+* flycheck
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :ensure t
+  :init
+  (global-flycheck-mode t))
+
+#+END_SRC
+* company-mode
+#+BEGIN_SRC emacs-lisp
+;(require 'company)
+;(add-hook 'after-init-hook 'global-company-mode)
+;(setq company-backends (delete 'company-semantic company-backends))
+;(define-key c-mode-map  [(tab)] 'company-complete)
+;(define-key c++-mode-map  [(tab)] 'company-complete)
+;(add-to-list 'company-backends 'company-c-headers)
+;(add-to-list 'company-c-headers-path-system "/usr/include/c++/6/")
 #+END_SRC
