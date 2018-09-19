@@ -5,18 +5,30 @@
 #+END_SRC
 * org-mode
 #+BEGIN_SRC emacs-lisp
-(use-package org-bullets
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+      (use-package org-bullets
+	:ensure t
+	:config
+	(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+      (setq org-src-window-setup 'current-window)
+    (add-to-list 'org-structure-template-alist
+		 '("el" "#+BEGIN_SRC emacs-lisp\n?#+END_SRC")
+  )
+  (add-hook 'org-mode-hook 'org-indent-mode)
 #+END_SRC
 * python
 #+BEGIN_SRC emacs-lisp
+(require 'ein)
 ;;(exec-path-from-shell-copy-env "/home/david/anaconda2/bin/ipython" )
 ;;(setq elpy-rpc-python-command "/home/david/anaconda2/bin/ipython")
 
 (elpy-enable)
-(elpy-use-ipython "/home/david/anaconda2/bin/ipython")
+(add-hook 'python-mode-hook 'elpy-mode)
+(with-eval-after-load 'elpy
+  (remove-hook 'elpy-modules 'elpy-module-flymake)
+  (add-hook 'elpy-mode-hook 'flycheck-mode)
+  (add-hook 'elpy-mode-hook 'elpy-use-ipython "ipython3")
+  (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save))
+;(elpy-use-ipython "/home/david/anaconda2/bin/ipython")
 (defvar myPackages
   '(better-defaults
     ein ;; add the ein package (Emacs ipython notebook)
@@ -35,6 +47,7 @@
 #+END_SRC
 
 #+RESULTS:
+| --no-browser |
 
 * swiper and ivy
 #+BEGIN_SRC emacs-lisp
@@ -76,68 +89,88 @@
 :ensure t
 :bind ("M-s" . avy-goto-word-1)) ;; changed from char as per jcs
 #+END_SRC
+* which-key
+#+BEGIN_SRC emacs-lisp
+
+   (use-package which-key
+:ensure t
+:init
+(which-key-mode))
+
+#+END_SRC
 * c++
 #+BEGIN_SRC emacs-lisp
-; ggtags
-(require 'ggtags)
-(add-hook 'c-mode-common-hook
-          (lambda ()
-            (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
-              (ggtags-mode 1))))
 
-(define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
-(define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
-(define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
-(define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
-(define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
-(define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
+  (require 'ggtags)
+  (add-hook 'c-mode-common-hook
+            (lambda ()
+              (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
+               (ggtags-mode 1))))
+ (define-key ggtags-mode-map (kbd "C-c g s") 'ggtags-find-other-symbol)
+ (define-key ggtags-mode-map (kbd "C-c g h") 'ggtags-view-tag-history)
+ (define-key ggtags-mode-map (kbd "C-c g r") 'ggtags-find-reference)
+ (define-key ggtags-mode-map (kbd "C-c g f") 'ggtags-find-file)
+ (define-key ggtags-mode-map (kbd "C-c g c") 'ggtags-create-tags)
+ (define-key ggtags-mode-map (kbd "C-c g u") 'ggtags-update-tags)
 
-(define-key ggtags-mode-map (kbd "M-,") 'pop-tag-mark)
+  (define-key ggtags-mode-map (kbd "M-,") 'pop-tag-mark)
 #+END_SRC
 
 #+RESULTS:
 | my:ac-c-headers-init |
 * auto complete
 #+BEGIN_SRC emacs-lisp
-(setq package-enable-at-startup nil)
-(require 'ido)
-(ido-mode t)
+  ;(setq package-enable-at-startup nil)
+  ;(require 'ido)
+  ;(ido-mode t)
+					    ; load auto-complete
+    ;; (require 'auto-complete)
+    ;; (require 'auto-complete-config)
+    ;; (ac-config-default)
+    ;; 					  ; start auto complete
+    ;; (global-auto-complete-mode t)
 #+END_SRC
 #+BEGIN_SRC emacs-lisp
-; start auto-complete with emacs
-;; auto-complete
-;; C++ auto completion mode
-(require 'auto-complete)
-(require 'auto-complete-config)
-(ac-config-default)
-;a function which initializes auto-complete-c-headers and get called for c/c++ hooks
-(defun my:ac-c-header-init ()
-  (require 'auto-complete-c-headers)
-  (add-to-list 'ac-sources 'ac-source-c-headers)
-  (add-to-list 'achead:include-directories '"/usr/include/c++/6
- /usr/include/x86_64-linux-gnu/c++/6 
- /usr/include/c++/6/backward
- /usr/lib/gcc/x86_64-linux-gnu/6/include
- /usr/local/include
- /usr/lib/gcc/x86_64-linux-gnu/6/include-fixed
- /usr/include/x86_64-linux-gnu
- /usr/include"
-     )
-  )
-(add-hook 'c++-mode-hook 'my:ac-c-header-init)
-(add-hook 'c-mode-hook 'my:ac-c-header-init)
-;; semantic mode
-(semantic-mode 1)
-(defun my:add-semantic-to-autocomplete()
-  (add-to-list 'ac-sources 'ac-source-semantic))
-(add-hook 'c-mode-common-hook 'my:add-semantic-to-autocomplete)
-(global-semantic-idle-scheduler-mode 1)
+  ; start auto-complete with emacs
+  ;; auto-complete
+  ;; C++ auto completion mode
+   ;; (require 'auto-complete)
+   ;; (require 'auto-complete-config)
+   ;; (ac-config-default)
+   ;; ;a function which initializes auto-complete-c-headers and get called for c/c++ hooks
+   ;;  (defun my:ac-c-header-init ()
+   ;;    (require 'auto-complete-c-headers)
+   ;;    (add-to-list 'ac-sources 'ac-source-c-headers)
+   ;;    (add-to-list 'achead:include-directories '"/usr/include/c++/6
+   ;;   /usr/include/x86_64-linux-gnu/c++/6 
+   ;;   /usr/include/c++/6/backward
+   ;;   /usr/lib/gcc/x86_64-linux-gnu/6/include
+   ;;   /usr/local/include
+   ;;   /usr/lib/gcc/x86_64-linux-gnu/6/include-fixed
+   ;;   /usr/include/x86_64-linux-gnu
+   ;;   /usr/include"
+   ;;       )
+   ;;    )
+   ;;  (add-hook 'c++-mode-hook 'my:ac-c-header-init)
+   ;;  (add-hook 'c-mode-hook 'my:ac-c-header-init)
+   ;;  ;; semantic mode
+   ;;  (semantic-mode 1)
+   ;; (defun my:add-semantic-to-autocomplete()
+   ;;   (add-to-list 'ac-sources 'ac-source-semantic))
+   ;; (add-hook 'c-mode-common-hook 'my:add-semantic-to-autocomplete)
+   ;; (global-semantic-idle-scheduler-mode 1)
 
 #+END_SRC
+
+#+RESULTS:
+| ac-latex-mode-setup | preview-mode-setup | ac-auctex-setup | turn-on-reftex | LaTeX-math-mode | flyspell-mode | visual-line-mode |
+
 * ido-mode
 #+BEGIN_SRC emacs-lisp
 (setq package-enable-at-startup nil)
 (require 'ido)
+(setq ido-enable-flex-matching nil)
+(setq ido-create-new-buffer 'always)
 (ido-mode t)
 
 #+END_SRC
@@ -151,15 +184,27 @@
 #+END_SRC
 * Yasnipet
 #+BEGIN_SRC emacs-lisp
-(use-package yasnippet
-  :ensure t
-  :init
-    (yas-global-mode 1))
+  (use-package yasnippet
+    :ensure t
+    :config (use-package yasnippet-snippets
+              :ensure t)
+    (yas-reload-all))
+(yas-global-mode 1)
+  ;(add-hook 'c++-mode-hook 'yas-minor-mode)
+  ;(add-hook 'lisp-mode-hook 'yas-minor-mode)
+  ;(add-hook 'python-mode-hook 'yas-minor-mode)
+
+
+
 #+END_SRC
+
+#+RESULTS:
+: t
+
 * smart parens
 #+BEGIN_SRC emacs-lisp
-(require 'smartparens-config)
-(add-hook 'prog-mode-hook 'smartparens-mode)
+;(require 'smartparens-config)
+;(add-hook 'prog-mode-hook 'smartparens-mode)
 #+END_SRC
 * Line in programming mode
 #+BEGIN_SRC emacs-lisp
@@ -182,13 +227,381 @@
   (global-flycheck-mode t))
 
 #+END_SRC
-* company-mode
+* compress mode
+  #+BEGIN_SRC emacs-lisp
+(auto-compression-mode 1)
+#+END_SRC
+
+#+RESULTS:
+: t
+  
+* caledar
+    #+BEGIN_SRC emacs-lisp
+(setq calendar-week-start-day 1)
+(setq european-calendar-style 't)
+(diary)
+#+END_SRC
+
+#+RESULTS:
+: t
+* own-key bindings
+     #+BEGIN_SRC emacs-lisp
+(global-set-key "\C-x\C-k0" 'uncomment-region)
+
+#+END_SRC
+
+#+RESULTS:
+: uncomment-region
+* term mode
+     #+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+#+RESULTS:
+: tramp-term
+* Latex
+ #+BEGIN_SRC emacs-lisp
+   ;;; Anpassungen für AUCTeX
+   ;-----------;
+   ;;; LaTeX ;;;
+   ;-----------;
+
+ (setq TeX-auto-save t)
+(setq TeX-parse-self t)
+(setq TeX-save-query nil)
+(setq TeX-PDF-mode t)
+(require 'flymake)
+
+(defun flymake-get-tex-args (file-name)
+(list "pdflatex"
+(list "-file-line-error" "-draftmode" "-interaction=nonstopmode" file-name)))
+
+(add-hook 'LaTeX-mode-hook 'flymake-mode)
+(setq ispell-program-name "aspell") ; could be ispell as well, depending on your preferences
+(setq ispell-dictionary "english") ; this can obviously be set to any language your spell-checking program supports
+
+(add-hook 'LaTeX-mode-hook 'flyspell-mode)
+(add-hook 'LaTeX-mode-hook 'flyspell-buffer)
+
+
+(defun turn-on-outline-minor-mode ()
+(outline-minor-mode 1))
+
+(add-hook 'LaTeX-mode-hook 'turn-on-outline-minor-mode)
+(add-hook 'latex-mode-hook 'turn-on-outline-minor-mode)
+(setq outline-minor-mode-prefix "\C-c \C-o") ; Or something else
+(require 'tex-site)
+(autoload 'reftex-mode "reftex" "RefTeX Minor Mode" t)
+(autoload 'turn-on-reftex "reftex" "RefTeX Minor Mode" nil)
+(autoload 'reftex-citation "reftex-cite" "Make citation" nil)
+(autoload 'reftex-index-phrase-mode "reftex-index" "Phrase Mode" t)
+(add-hook 'latex-mode-hook 'turn-on-reftex) ; with Emacs latex mode
+;; (add-hook 'reftex-load-hook 'imenu-add-menubar-index)
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+
+(setq LaTeX-eqnarray-label "eq"
+LaTeX-equation-label "eq"
+LaTeX-figure-label "fig"
+LaTeX-table-label "tab"
+LaTeX-myChapter-label "chap"
+TeX-auto-save t
+TeX-newline-function 'reindent-then-newline-and-indent
+TeX-parse-self t
+TeX-style-path
+'("style/" "auto/"
+"/usr/share/emacs21/site-lisp/auctex/style/"
+"/var/lib/auctex/emacs21/"
+"/usr/local/share/emacs/site-lisp/auctex/style/")
+LaTeX-section-hook
+'(LaTeX-section-heading
+LaTeX-section-title
+LaTeX-section-toc
+LaTeX-section-section
+LaTeX-section-label))
+#+END_SRC
+
+#+RESULTS:
+| LaTeX-section-heading | LaTeX-section-title | LaTeX-section-toc | LaTeX-section-section | LaTeX-section-label |
+* irony mode
+     #+BEGIN_SRC emacs-lisp
+       ;;        (require 'irony)
+       ;;        (add-hook 'c++-mode-hook 'irony-mode)
+       ;;        (add-hook 'c-mode-hook 'irony-mode)
+       ;;        (add-hook 'objc-mode-hook 'irony-mode)
+
+       ;;        (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+       ;;        (require 'company-irony-c-headers)
+       ;; ;; Load with `irony-mode` as a grouped backend
+       ;; (eval-after-load 'company
+       ;;   '(add-to-list
+       ;;     'company-backends '(company-irony-c-headers company-irony)))
+       ;; (setq irony-additional-clang-options '("-std=c++11"
+       ;;                        "-I//usr/include/c++/4.7/"))
+       (use-package company-irony
+         :ensure t
+         :config(require 'company)
+         (add-to-list 'company-backend 'company-irony))
+       (use-package irony
+         :ensure t
+         :config
+         (add-hook 'c++-mode-hook 'irony-mode)
+         (add-hook 'c-mode-hook 'irony-mode)
+         (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+         )
+;(with-eval-after-load 'company
+;(add-hook '')) Extend if necissary,
+#+END_SRC
+
+#+RESULTS:
+| (company-irony-c-headers company-irony) | company-bbdb | company-nxml | company-css | company-eclim | company-semantic | company-clang | company-xcode | company-cmake | company-capf | company-files | (company-dabbrev-code company-gtags company-etags company-keywords) | company-oddmuse | company-dabbrev |
+* company mode
+     #+BEGIN_SRC emacs-lisp
+            ;; (require 'cc-mode)
+            ;; (require 'auto-complete-clang)
+            ;; (define-key c++-mode-map (kbd "C-S-<return>") 'ac-complete-clang)
+            ;; (require 'company)
+            ;; (require 'company-c-headers)
+            ;; (add-hook 'after-init-hook 'global-company-mode)
+            ;; (setq company-backends (delete 'company-semantic company-backends))
+            ;; (define-key c-mode-map  [(tab)] 'company-complete)
+            ;; (define-key c++-mode-map  [(tab)] 'company-complete)
+            ;; ;;company-c-headers
+
+            ;; (add-to-list 'company-backends 'company-c-headers)
+            ;; (add-to-list 'company-c-headers-path-system "/usr/include/c++/7/")
+
+
+            ;;(add-to-list 'company-c-headers-path-system "/usr/include/c++/4.8/")
+            (use-package company
+              :ensure 
+              :config
+              (setq company-idle-delay 0)
+              (setq company-minimum-prefix-length 3)
+              (with-eval-after-load 'company
+                  (define-key company-active-map (kbd "M-n") nil)
+                  (define-key company-active-map (kbd "M-p") nil)
+                  (define-key company-active-map (kbd "C-n") #'company-select-next)
+                  (define-key company-active-map (kbd "C-p") #'company-select-previous))
+              :init
+              (add-hook 'after-init-hook 'global-company-mode))
+#+END_SRC
+
+#+RESULTS:
+: company-complete
+* Tramp
+ #    +BEGIN_SRC emacs-lisp
+
+#+END_SRC
+
+#+RESULTS:
+* Terminal
+  
 #+BEGIN_SRC emacs-lisp
-;(require 'company)
-;(add-hook 'after-init-hook 'global-company-mode)
-;(setq company-backends (delete 'company-semantic company-backends))
-;(define-key c-mode-map  [(tab)] 'company-complete)
-;(define-key c++-mode-map  [(tab)] 'company-complete)
-;(add-to-list 'company-backends 'company-c-headers)
-;(add-to-list 'company-c-headers-path-system "/usr/include/c++/6/")
+   (defvar my-term-shell "/bin/bash")
+    (defadvice ansi-term (before force-bash)
+    (interactive (list my-term-shell)))
+  (ad-activate 'ansi-term)
+  (defalias 'yes-or-no-p 'y-or-n-p)
+  (when window-system (global-hl-line-mode t))
+#+END_SRC
+
+#+RESULTS:
+: t
+* Beacon
+#+BEGIN_SRC emacs-lisp
+(use-package beacon
+:ensure t
+:init
+(beacon-mode 1))
+
+#+END_SRC
+
+#+RESULTS:
+* SMEX
+#+BEGIN_SRC emacs-lisp
+  (use-package smex
+    :ensure t
+    :init (smex-initialize)
+    :bind
+    ("M-x" . smex))
+  
+
+#+END_SRC
+* Ido verticle
+#+BEGIN_SRC emacs-lisp
+  (use-package ido-vertical-mode
+    :ensure t
+    :init
+    (ido-vertical-mode 1))
+  (setq ido-verticle-define-keys 'C-n-and-C-p-only)
+
+#+END_SRC
+* switch buffers
+#+BEGIN_SRC emacs-lisp
+;(global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
+
+#+END_SRC
+* enable ibuffer
+#+BEGIN_SRC emacs-lisp
+;(global-set-key (kbd "C-x b") 'ibuffer)
+
+#+END_SRC
+* config/ reload
+#+BEGIN_SRC emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "~/.emacs.d/myinit.org"))
+  (global-set-key (kbd "C-c e") 'config-visit)
+
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+  (defun config-reload ()
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org")))
+  (global-set-key (kbd "C-c r") 'config-reload)
+#+END_SRC
+* switch window
+#+BEGIN_SRC emacs-lisp
+  (use-package switch-window
+    :ensure t
+    :config
+    (setq switch-window-input-style 'minibuffer)
+    (setq switch-window-increase 4)
+    (setq switch-window-treshold 2)
+    (setq switch-window-shortcut-style 'qwerty)
+    (setq switch-window-qwerty-shortcuts
+	  '("a" "s " "d" "f" "h" "j" "k" "l"))
+    :bind
+    ([remap other-window] . switch-window))
+#+END_SRC
+
+* window split funtio
+#+BEGIN_SRC emacs-lisp
+  (defun split-and-follow-horizontally ()
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+  (defun split-and-follow-vertically ()
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+
+
+#+END_SRC
+* Electric parentehis
+#+BEGIN_SRC emacs-lisp
+  (setq electric-pair-pairs '(
+			      (?\( . ?\))
+			      (?\[ . ?\])
+			      (?\{ . ?\})
+			      (?\' . ?\')
+  ))
+(electric-pair-mode t)
+#+END_SRC
+* convinient functio
+** sub-word
+#+BEGIN_SRC emacs-lisp
+  (global-subword-mode 1)
+#+END_SRC
+** copy hole line
+#+BEGIN_SRC emacs-lisp
+  (defun copy-whole-line ()
+    (interactive)
+    (save-excursion
+      (kill-new
+       (buffer-substring
+	(point-at-bol)
+	(point-at-eol)))))
+  (global-set-key (kbd "C-c w l") 'copy-whole-line)
+#+END_SRC
+* hungry delete
+#+BEGIN_SRC emacs-lisp
+  (use-package hungry-delete
+    :ensure t
+    :config (global-hungry-delete-mode))
+#+END_SRC
+* show lina and column
+#+BEGIN_SRC emacs-lisp
+(line-number-mode 1)
+(column-number-mode 1)
+#+END_SRC
+* Buffers
+** kill all buffers
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+* rainbow delimiters & mode
+#+BEGIN_SRC emacs-lisp
+
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+(rainbow-delimiters-mode 1))
+ (use-package rainbow-mode
+    :ensure t
+    :init (add-hook 'prog-mode-hook 'rainbow-mode))
+
+#+END_SRC
+* dashboard
+#+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook)
+    (setq dashboard-items '((recents . 10)))
+    (setq dashboard-banner-logo-title "hello"))
+#+END_SRC
+* time
+#+BEGIN_SRC emacs-lisp
+(setq display-time-24hr-format t)
+(display-time-mode t)
+#+END_SRC
+* dmenu
+#+BEGIN_SRC emacs-lisp
+  (use-package dmenu
+    :ensure t
+    :bind
+    ("s-SPC" . 'dmenu))
+#+END_SRC
+* symon
+#+BEGIN_SRC emacs-lisp
+  (use-package symon
+      :ensure t
+      :bind("s-h" . symon-mode))
+
+#+END_SRC
+* exwm
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package exwm
+  ;;   :ensure t
+  ;;   :config(require 'exwm-config)
+  ;;   (exwm-config-default))
+
+#+END_SRC
+* kill popup
+#+BEGIN_SRC emacs-lisp
+(use-package popup-kill-ring
+  :ensure t
+  :bind ("M-y" . popup-kill-ring))
+#+END_SRC
+* mark multiple
+#+BEGIN_SRC emacs-lisp
+  (use-package mark-multiple
+    :ensure t
+    :bind("C-c q" . 'mark-next-like-this))
+  (use-package expand-region
+    :ensure t
+    :bind( "C-q" . 'er/expand-region))
+#+END_SRC
+* Pritty
+#+BEGIN_SRC emacs-lisp
+  ;;   (when window-system
+  ;;     (use-package pretty-mode
+  ;;     :ensure t
+  ;;     :config
+  ;; (global-pretty-mode t)))
 #+END_SRC
